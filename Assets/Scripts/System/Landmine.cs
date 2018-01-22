@@ -6,16 +6,15 @@ using UnityEngine;
 
 public class Landmine : MonoBehaviour {
 
-    public float damageValue = 50f;
     public string destroyFX;
 
     void OnCollisionEnter(Collision coll) {
         if (coll.gameObject.tag == "Player") {
-            GlobalData.Instance.Health -= damageValue;
+            GlobalData.Instance.Health -= GlobalData.Instance.level.landminePower;
             GameController.Instance.SpawnFX(gameObject, destroyFX, true);
         }
         if (coll.gameObject.tag == "Enemy") {
-            coll.gameObject.GetComponent<EnemyController>().DecreaseHealth(damageValue);
+            coll.gameObject.GetComponent<EnemyController>().DecreaseHealth(GlobalData.Instance.level.landminePower);
             GameController.Instance.SpawnFX(gameObject, destroyFX, true);
         }
     }

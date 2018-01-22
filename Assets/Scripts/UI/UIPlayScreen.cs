@@ -11,6 +11,8 @@ namespace BugRush.UI {
         private Image _playerHPImage = null;
         [SerializeField]
         private Image _playerEnergyImage = null;
+        [SerializeField]
+        private Text _enemiesCounterText = null;
 
         private Vehicle _vehicle;
 
@@ -24,6 +26,7 @@ namespace BugRush.UI {
         public void RefreshUI() {
             _playerHPImage.fillAmount = GlobalData.Instance.Health / _vehicle.maxHP;
             _playerEnergyImage.fillAmount = GlobalData.Instance.Energy / _vehicle.maxEnergy;
+            _enemiesCounterText.text = GlobalData.Instance.EnemiesCount.ToString();
         }
 
         void OnDestroy() {

@@ -19,9 +19,20 @@ namespace BugRush.System {
                 if (value < 0) { energy = 0; }
                 if (OnValueUpdate != null) OnValueUpdate();
             } }
+        public int EnemiesCount {
+            get { return enemiesCount; }
+            set {
+                enemiesCount = value;
+                if (value < 0) { enemiesCount = 0; }
+                if (OnValueUpdate != null) OnValueUpdate();
+            }
+        }
+
+        public Level level;
 
         private float health;
         private float energy;
+        private int enemiesCount;
 
         private static GlobalData globalData;
         public static event UnityAction OnValueUpdate;

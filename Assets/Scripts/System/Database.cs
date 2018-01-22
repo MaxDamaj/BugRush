@@ -24,6 +24,8 @@ namespace BugRush.System {
 
         [SerializeField]
         private Vehicle _vehicle = null;
+        [SerializeField]
+        public List<string> enemiesTypes = null;
 
         private static Database instance;
 

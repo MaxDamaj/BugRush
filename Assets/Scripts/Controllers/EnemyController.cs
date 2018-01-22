@@ -14,7 +14,6 @@ namespace BugRush.Controllers {
         public EnemyType enemyType;
         public float maxSpeed = 4f;
         public float maxHP = 50f;
-        public TextMesh hpValue;
         public string destroyFX;
 
         private Rigidbody _rigidbody;
@@ -25,12 +24,12 @@ namespace BugRush.Controllers {
         void Start() {
             _rigidbody = GetComponent<Rigidbody>();
             _health = maxHP;
-            hpValue.text = _health + "/" + maxHP;
         }
 
         void FixedUpdate() {
             if (_target == null) return;
             if (isMoving && enemyType != EnemyType.Passive) {
+                //Moving by behaviour
                 Vector3 velocity = Vector3.zero;
                 if (enemyType == EnemyType.Fleeing) velocity = new Vector3(transform.position.x - _target.position.x, 0, transform.position.z - _target.position.z);
                 if (enemyType == EnemyType.Hunting) velocity = new Vector3(_target.position.x - transform.position.x, 0, _target.position.z - transform.position.z);
@@ -38,7 +37,6 @@ namespace BugRush.Controllers {
                     _rigidbody.AddRelativeForce(velocity, ForceMode.Force);
                 }
             }
-            hpValue.text = _health + "/" + maxHP;
         }
 
         #region Colliders
@@ -46,6 +44,9 @@ namespace BugRush.Controllers {
         void OnCollisionEnter(Collision coll) {
             if (coll.gameObject.tag == "Player") {
                 DecreaseHealth(coll.gameObject.GetComponent<Rigidbody>().velocity.magnitude);
+            }
+            if (coll.gameObject.tag == "Void") {
+                DecreaseHealth(int.MaxValue);
             }
         }
 
@@ -67,9 +68,10 @@ namespace BugRush.Controllers {
             _health -= (value);
             _health = Mathf.RoundToInt(_health);
             if (_health <= 0) {
-                _health = 0;
                 GameController.Instance.SpawnFX(gameObject, destroyFX, true);
+                GameController.Instance.RecalculateEnemies();
             }
         }
+
     }
 }

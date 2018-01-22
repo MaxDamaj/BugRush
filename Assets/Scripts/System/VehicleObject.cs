@@ -14,6 +14,9 @@ namespace BugRush.System {
             if (collision.gameObject.tag == "Enemy") {
                 GlobalData.Instance.Health -= 1;
             }
+            if (collision.gameObject.tag == "Void") {
+                GlobalData.Instance.Health -= int.MaxValue;
+            }
         }
 
     }
