@@ -10,7 +10,8 @@ public enum SegmentType {
     Hole = 2,
     Landmine = 3,
     Rocks = 4,
-    Border = 5
+    Border = 5,
+    RepairKit = 6
 };
 
 namespace BugRush.System {
@@ -23,7 +24,8 @@ namespace BugRush.System {
         }
 
         public void SetType(SegmentType newType) {
-            if (transform.childCount > 0) { Destroy(transform.GetChild(0).gameObject); }
+            int count = transform.childCount;
+            for (int i = 0; i < count; i++) { Destroy(transform.GetChild(i).gameObject); }
             type = newType;
             Instantiate(Resources.Load<GameObject>("Segments/seg" + type.ToString()), transform);
         }

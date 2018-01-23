@@ -17,9 +17,8 @@ namespace BugRush.UI {
         private Vehicle _vehicle;
 
 
-
-        public void Init(Vehicle vehicle) {
-            _vehicle = vehicle;
+        void Start() {
+            _vehicle = Database.Instance.GetVehicle();
             GlobalData.OnValueUpdate += RefreshUI;
         }
 

@@ -5,22 +5,26 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 
 [Serializable]
 public class Level {
     public string title;
+    public int rows;
     public int columns;
     public List<int> cells;
     public float landminePower;
+    public float repairKitPower;
     public int spawnDelay;
     public float spawnRadius;
     public List<int> spawnBugsQuantity;
 
     public Level(int x, int y, string name) {
         title = name;
-        columns = x;
+        rows = x;
+        columns = y;
         landminePower = 50f;
+        repairKitPower = 25f;
         spawnDelay = 10;
         spawnRadius = 7f;
         spawnBugsQuantity = new List<int>();
@@ -40,8 +44,9 @@ namespace BugRush.Controllers {
         [SerializeField]
         private GridDrawer _gridDrawer = null;
         [SerializeField]
-        private string levelName = "level_0";
+        private PlayerController _playerController = null;
 
+        private string levelName;
         private Transform _fxContainer;
         private Transform _entitiesContainer;
 
@@ -60,18 +65,46 @@ namespace BugRush.Controllers {
         private void Start() {
             _fxContainer = GameObject.Find("FxContainer").transform;
             _entitiesContainer = GameObject.Find("EntitiesContainer").transform;
-            GlobalData.Instance.level = LoadLevel(levelName);
-            _gridDrawer.Init(GlobalData.Instance.level);
-            FindObjectOfType<UIPlayScreen>().Init(Database.Instance.GetVehicle());
         }
 
-        #region Methods
+
+        #region Level
+
+        public void InitLevel(string level) {
+            levelName = level;
+            GlobalData.Instance.level = LoadLevel(levelName);
+            _gridDrawer.Init(GlobalData.Instance.level);
+            _playerController.Init();
+        }
+
+        public void InitLevel(int row, int columns, string title) {
+            levelName = title;
+            GlobalData.Instance.level = new Level(row, columns, title);
+            _gridDrawer.Init(GlobalData.Instance.level);
+            _playerController.Init();
+        }
+
+        public void UnloadLevel() {
+            //Remove Enemies
+            int count = _entitiesContainer.childCount;
+            for (int i=0; i<count; i++) {
+                Destroy(_entitiesContainer.GetChild(i).gameObject);
+            }
+            //Remove cells
+            _gridDrawer.ClearGrid();
+            GlobalData.Instance.isEnableEdit = false;
+            Debug.Log("return to menu");
+            SceneManager.LoadScene("menu");
+        }
 
         public Level LoadLevel(string title) {
             if (Directory.Exists(Application.persistentDataPath + "/Levels")) {
-                if (File.Exists(Application.persistentDataPath + "/Levels/" + title + ".lvl")) {
-                    List<string> saveFile = new List<string>();
-                    saveFile.AddRange(File.ReadAllLines(Application.persistentDataPath + "/Levels/" + title + ".lvl"));
+                List<string> saveFile = new List<string>();
+                if (File.Exists(Application.persistentDataPath + "/Levels/" + title + ".json")) {
+                    saveFile.AddRange(File.ReadAllLines(Application.persistentDataPath + "/Levels/" + title + ".json"));
+                    return JsonUtility.FromJson<Level>(saveFile[0]);
+                } else {
+                    saveFile.Add(Resources.Load<TextAsset>("sampleLevel").text);
                     return JsonUtility.FromJson<Level>(saveFile[0]);
                 }
             } else {
@@ -84,11 +117,13 @@ namespace BugRush.Controllers {
             if (Directory.Exists(Application.persistentDataPath + "/Levels")) {
                 List<string> saveFile = new List<string>();
                 saveFile.Add(JsonUtility.ToJson(level));
-                File.WriteAllLines(Application.persistentDataPath + "/Levels/" + title + ".lvl", saveFile.ToArray());
+                File.WriteAllLines(Application.persistentDataPath + "/Levels/" + title + ".json", saveFile.ToArray());
             } else {
                 Directory.CreateDirectory(Application.persistentDataPath + "/Levels");
             }
         }
+
+        #endregion
 
         public void SpawnFX(GameObject target, string fxTitle, bool isDestroyTarget) {
             GameObject fx = Instantiate(Resources.Load<GameObject>("FXs/" + fxTitle), target.transform.position, target.transform.rotation);
@@ -103,11 +138,19 @@ namespace BugRush.Controllers {
             RecalculateEnemies();
         }
 
-        public void RecalculateEnemies() {
-            GlobalData.Instance.EnemiesCount = _entitiesContainer.childCount;
+        public VehicleObject SpawnPlayer(Vehicle vehicle) {
+            VehicleObject player = Instantiate(vehicle.vehicle, _entitiesContainer);
+            return player;
         }
 
-        #endregion
+        public void RecalculateEnemies() {
+            GlobalData.Instance.EnemiesCount = _entitiesContainer.childCount-1;
+            if (GlobalData.Instance.EnemiesCount == 0) {
+                UnloadLevel();
+            }
+        }
+
+        
 
     }
 }
