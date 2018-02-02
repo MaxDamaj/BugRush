@@ -12,7 +12,7 @@ namespace BugRush.System {
 
         private void OnCollisionEnter(Collision collision) {
             if (collision.gameObject.tag == "Enemy") {
-                GlobalData.Instance.Health -= 1;
+                GlobalData.Instance.Health -= collision.impulse.magnitude/4;
             }
             if (collision.gameObject.tag == "Void") {
                 GlobalData.Instance.Health -= int.MaxValue;

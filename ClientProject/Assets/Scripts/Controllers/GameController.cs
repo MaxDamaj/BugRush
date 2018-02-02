@@ -46,9 +46,14 @@ namespace BugRush.Controllers {
         [SerializeField]
         private PlayerController _playerController = null;
 
+        public Dictionary<string, GameObject> dictSegments;
+
         private string levelName;
         private Transform _fxContainer;
         private Transform _entitiesContainer;
+
+        private Dictionary<string, GameObject> dictEnemies;
+        private Dictionary<string, GameObject> dictFXs;
 
         private bool _isCountingEntities;
         private static GameController instance;
@@ -64,8 +69,16 @@ namespace BugRush.Controllers {
         }
 
         private void Start() {
+            GlobalData.Instance.isEnableEdit = false;
             _fxContainer = GameObject.Find("FxContainer").transform;
             _entitiesContainer = GameObject.Find("EntitiesContainer").transform;
+            dictSegments = new Dictionary<string, GameObject>();
+            dictEnemies = new Dictionary<string, GameObject>();
+
+            dictSegments = LoadResources<GameObject>("Segments/");
+            dictEnemies = LoadResources<GameObject>("Enemies/");
+            dictFXs = LoadResources<GameObject>("FXs/");
+
         }
 
 
@@ -134,15 +147,27 @@ namespace BugRush.Controllers {
 
         #endregion
 
+        public Dictionary<string,T> LoadResources<T>(string path) where T : UnityEngine.Object {
+            List<T> list = new List<T>();
+            Dictionary<string, T> dict = new Dictionary<string, T>();
+            list.AddRange(Resources.LoadAll<T>(path));
+            foreach (var cell in list) {
+                dict.Add(cell.name, cell);
+            }
+            return dict;
+        }
+
         public void SpawnFX(GameObject target, string fxTitle, bool isDestroyTarget) {
-            GameObject fx = Instantiate(Resources.Load<GameObject>("FXs/" + fxTitle), target.transform.position, target.transform.rotation);
+            GameObject fx; dictFXs.TryGetValue(fxTitle, out fx);
+            fx = Instantiate(fx, target.transform.position, target.transform.rotation);
             fx.transform.SetParent(_fxContainer);
             Destroy(fx, 3);
             if (isDestroyTarget) Destroy(target);
         }
 
         public void SpawnEnemy(Vector3 position, int enemyID) {
-            GameObject enemy = Instantiate(Resources.Load<GameObject>("Enemies/" + Database.Instance.enemiesTypes[enemyID]), position, Quaternion.identity);
+            GameObject enemy; dictEnemies.TryGetValue(Database.Instance.enemiesTypes[enemyID], out enemy);
+            enemy = Instantiate(enemy, position, Quaternion.identity);
             enemy.transform.SetParent(_entitiesContainer);
             RecalculateEnemies();
         }

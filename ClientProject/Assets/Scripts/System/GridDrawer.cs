@@ -36,19 +36,5 @@ namespace BugRush.System {
             }
         }
 
-        void FixedUpdate() {
-            RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit)) {
-                Transform objectHit = hit.transform;
-                if (Input.GetMouseButtonDown(0) && GlobalData.Instance.isEnableEdit) {
-                    if (objectHit.name.Contains("seg")) {
-                        objectHit.parent.GetComponent<GridSegment>().SetType(GlobalData.Instance.newSegmentType);
-                    }
-                }
-            }
-        }
-
     }
 }

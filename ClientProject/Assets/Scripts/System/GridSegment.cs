@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BugRush.Controllers;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,17 +20,14 @@ namespace BugRush.System {
 
         public SegmentType type;
 
-        void Start() {
-            SetType(type);
-        }
-
         public void SetType(SegmentType newType) {
             int count = transform.childCount;
             for (int i = 0; i < count; i++) { Destroy(transform.GetChild(i).gameObject); }
             type = newType;
-            Instantiate(Resources.Load<GameObject>("Segments/seg" + type.ToString()), transform);
+            GameObject newSegment; GameController.Instance.dictSegments.TryGetValue("seg" + type.ToString(), out newSegment);
+            newSegment = Instantiate(newSegment, transform);
+            newSegment.SetActive(true);
         }
-
 
     }
 }

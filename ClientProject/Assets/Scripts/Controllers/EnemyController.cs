@@ -43,7 +43,7 @@ namespace BugRush.Controllers {
 
         void OnCollisionEnter(Collision coll) {
             if (coll.gameObject.tag == "Player") {
-                DecreaseHealth(coll.gameObject.GetComponent<Rigidbody>().velocity.magnitude);
+                DecreaseHealth(coll.impulse.magnitude);
             }
             if (coll.gameObject.tag == "Void") {
                 DecreaseHealth(int.MaxValue);
@@ -65,8 +65,7 @@ namespace BugRush.Controllers {
         #endregion
 
         public void DecreaseHealth(float value) {
-            _health -= (value);
-            _health = Mathf.RoundToInt(_health);
+            _health -= value;
             if (_health <= 0) {
                 GameController.Instance.SpawnFX(gameObject, destroyFX, true);
                 GameController.Instance.RecalculateEnemies();

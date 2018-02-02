@@ -23,17 +23,19 @@ namespace BugRush.Controllers {
 
         IEnumerator SpawnBugs() {
             while (true) {
-                bool isSpawn = false;
-                Vector3 rndVector = Vector3.zero;
-                for (int i = 0; i < Database.Instance.enemiesTypes.Count; i++) {
-                    if (spawnQuantity[i] > 0) {
-                        isSpawn = true;
-                        rndVector = new Vector3(Random.Range(-10, 10), 2.5f, Random.Range(-GlobalData.Instance.level.spawnRadius, GlobalData.Instance.level.spawnRadius));
-                        GameController.Instance.SpawnEnemy(transform.position + rndVector, i);
-                        spawnQuantity[i]--;
+                if (!GlobalData.Instance.isEnableEdit) {
+                    bool isSpawn = false;
+                    Vector3 rndVector = Vector3.zero;
+                    for (int i = 0; i < Database.Instance.enemiesTypes.Count; i++) {
+                        if (spawnQuantity[i] > 0) {
+                            isSpawn = true;
+                            rndVector = new Vector3(Random.Range(-10, 10), 2.5f, Random.Range(-GlobalData.Instance.level.spawnRadius, GlobalData.Instance.level.spawnRadius));
+                            GameController.Instance.SpawnEnemy(transform.position + rndVector, i);
+                            spawnQuantity[i]--;
+                        }
                     }
+                    if (!isSpawn) { Destroy(_body); }
                 }
-                if (!isSpawn) { Destroy(_body); }
                 yield return new WaitForSeconds(GlobalData.Instance.level.spawnDelay);
             }
         }
