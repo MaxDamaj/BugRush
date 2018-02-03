@@ -68,7 +68,7 @@ namespace BugRush.Controllers {
             _health -= value;
             if (_health <= 0) {
                 GameController.Instance.SpawnFX(gameObject, destroyFX, true);
-                GameController.Instance.RecalculateEnemies();
+                GameController.Instance.RecalculateEnemies(gameObject);
             }
         }
 

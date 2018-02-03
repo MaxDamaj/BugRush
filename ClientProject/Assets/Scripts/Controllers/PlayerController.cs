@@ -52,17 +52,15 @@ namespace BugRush.Controllers {
         }
 
         void DeathCheck() {
-            if (GlobalData.Instance.Health <= 0) {
+            if (GlobalData.Instance.Health <= 0 && _player != null) {
                 GameController.Instance.SpawnFX(_player.gameObject, destroyFX, true);
-                Invoke("CallUnloadLevel", 3);
+                IEnumerator unloadLevel = GameController.Instance.UnloadLevel(3, PlayState.ZeroHealth);
+                StartCoroutine(unloadLevel);
             }
             if (GlobalData.Instance.Energy <= 0) {
-                Invoke("CallUnloadLevel", 3);
+                IEnumerator unloadLevel = GameController.Instance.UnloadLevel(3, PlayState.ZeroEnergy);
+                StartCoroutine(unloadLevel);
             }
-        }
-
-        void CallUnloadLevel() {
-            GameController.Instance.UnloadLevel();
         }
 
     }

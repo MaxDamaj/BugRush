@@ -6,6 +6,14 @@ using System.IO;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
+
+public enum PlayState {
+    Unsigned = 0,
+    ZeroHealth = 1,
+    ZeroEnergy = 2,
+    ZeroEnemies = 3
+};
 
 [Serializable]
 public class Level {
@@ -54,9 +62,11 @@ namespace BugRush.Controllers {
 
         private Dictionary<string, GameObject> dictEnemies;
         private Dictionary<string, GameObject> dictFXs;
+        private Dictionary<GameObject, EnemyController> dictEntities;
 
         private bool _isCountingEntities;
         private static GameController instance;
+        public static event UnityAction<PlayState> OnPlayStateChange;
 
         //Instance
         public static GameController Instance {
@@ -90,22 +100,15 @@ namespace BugRush.Controllers {
             GlobalData.Instance.level = LoadLevel(levelName);
             _gridDrawer.Init(GlobalData.Instance.level);
             _playerController.Init();
-            Invoke("BeginCountingEntities", 1);
+            dictEntities = new Dictionary<GameObject, EnemyController>();
         }
 
-        public void InitLevel(int row, int columns, string title) {
-            _isCountingEntities = false;
-            levelName = title;
-            GlobalData.Instance.level = new Level(row, columns, title);
-            _gridDrawer.Init(GlobalData.Instance.level);
-            _playerController.Init();
-            Invoke("BeginCountingEntities", 1);
-        }
-
-        public void UnloadLevel() {
+        public IEnumerator UnloadLevel(float delay, PlayState state) {
+            if (OnPlayStateChange != null) OnPlayStateChange(state);
+            yield return new WaitForSeconds(delay);
             //Remove Enemies
             int count = _entitiesContainer.childCount;
-            for (int i=0; i<count; i++) {
+            for (int i = 0; i < count; i++) {
                 Destroy(_entitiesContainer.GetChild(i).gameObject);
             }
             //Remove cells
@@ -147,7 +150,7 @@ namespace BugRush.Controllers {
 
         #endregion
 
-        public Dictionary<string,T> LoadResources<T>(string path) where T : UnityEngine.Object {
+        public Dictionary<string, T> LoadResources<T>(string path) where T : UnityEngine.Object {
             List<T> list = new List<T>();
             Dictionary<string, T> dict = new Dictionary<string, T>();
             list.AddRange(Resources.LoadAll<T>(path));
@@ -169,7 +172,9 @@ namespace BugRush.Controllers {
             GameObject enemy; dictEnemies.TryGetValue(Database.Instance.enemiesTypes[enemyID], out enemy);
             enemy = Instantiate(enemy, position, Quaternion.identity);
             enemy.transform.SetParent(_entitiesContainer);
-            RecalculateEnemies();
+            dictEntities.Add(enemy, enemy.GetComponent<EnemyController>());
+            RecalculateEnemies(null);
+            _isCountingEntities = true;
         }
 
         public VehicleObject SpawnPlayer(Vehicle vehicle) {
@@ -177,15 +182,13 @@ namespace BugRush.Controllers {
             return player;
         }
 
-        public void RecalculateEnemies() {
-            GlobalData.Instance.EnemiesCount = _entitiesContainer.childCount-2;
+        public void RecalculateEnemies(GameObject entity) {
+            if (entity != null) { dictEntities.Remove(entity); }
+            GlobalData.Instance.EnemiesCount = dictEntities.Count;
             if (GlobalData.Instance.EnemiesCount <= 0 && _isCountingEntities) {
-                UnloadLevel();
+                IEnumerator unloadLevel = UnloadLevel(3, PlayState.ZeroEnemies);
+                StartCoroutine(unloadLevel);
             }
-        }
-
-        void BeginCountingEntities() {
-            _isCountingEntities = true;
         }
 
     }

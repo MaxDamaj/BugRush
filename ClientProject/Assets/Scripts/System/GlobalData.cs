@@ -30,6 +30,7 @@ namespace BugRush.System {
 
         public Level level;
         public bool isEnableEdit;
+        public SegmentType newSegmentType;
 
         private float health;
         private float energy;

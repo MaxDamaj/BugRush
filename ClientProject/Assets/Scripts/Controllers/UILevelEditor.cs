@@ -77,6 +77,7 @@ namespace BugRush.Controllers {
                     ResetButtons();
                     tmp.GetComponent<Button>().interactable = false;
                     _dictIcons.TryGetValue("icon" + type.ToString(), out _newCellSprite);
+                    GlobalData.Instance.newSegmentType = type;
                     GlobalData.Instance.isEnableEdit = true;
                 });
             }
@@ -91,8 +92,6 @@ namespace BugRush.Controllers {
         }
 
         #endregion
-
-
 
         #region Common
 
@@ -156,11 +155,12 @@ namespace BugRush.Controllers {
             if (eventData.pointerEnter.transform.parent == _gridContainer) {
                 if (eventData.button == PointerEventData.InputButton.Left) {
                     eventData.pointerEnter.GetComponent<Image>().sprite = _newCellSprite;
+                    eventData.pointerEnter.name = GlobalData.Instance.newSegmentType.ToString();
                 }
                 if (eventData.button == PointerEventData.InputButton.Right) {
                     eventData.pointerEnter.GetComponent<Image>().sprite = _defaultCellSprite;
+                    eventData.pointerEnter.name = SegmentType.Default.ToString();
                 }
-                Debug.Log("Pressed to " + eventData.pointerEnter.name);
             }
         }
     }
